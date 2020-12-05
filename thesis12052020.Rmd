@@ -1,0 +1,256 @@
+---
+title: "Thesis"
+author: "Abigail Strick"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(srvyr)
+library(tidyselect)
+library(tidyverse)
+library(magrittr)
+library(readr)
+library(tidyr)
+
+setwd("C:/Users/abbys/Downloads")
+hints5_cycle3_public <- read_csv("hints5_cycle3_public.csv")
+head(hints5_cycle3_public)
+```
+
+
+ 
+
+
+```{r}
+hints1<-hints5_cycle3_public%>%
+    rename(Gender=SelfGender,
+         Income=IncomeRanges,
+         smokeStatus=smokeStat,
+         Region=CENSREG,
+         RuralUrban=RUC2013)%>%
+  filter(Fruit>-1,Vegetables>-1,Income>-1,EducA>-1,Gender>-1,RuralUrban>-1,BMI>14,RaceEthn5>-1,TimesModerateExercise>-1,Age>-1, HowLongModerateExerciseMinutes>-1,smokeStatus>-1, Tablet_AchieveGoal>-1, NoticeCalorieInfoOnMenu>-1,SeekHealthInfo>-1, OwnAbilityTakeCareHealth>-1,    smokeStatus>-1)%>%
+  select(Vegetables,Fruit,Income,EducA,Gender,RuralUrban,BMI,RaceEthn5,TimesModerateExercise,Age,HowLongModerateExerciseMinutes,smokeStatus,Region,Tablet_AchieveGoal,NoticeCalorieInfoOnMenu,SeekHealthInfo,OwnAbilityTakeCareHealth)%>%
+  #mutate(Gender=as.factor(Gender),BMI=as.integer(BMI),  RuralUrban=as.factor(RuralUrban),  RaceEthn5=as.factor(RaceEthn5),  Income=as.factor(Income),  TimesModerateExercise=as.integer(TimesModerateExercise),  Age=as.integer(Age),  OwnAbilityTakeCareHealth=as.factor(OwnAbilityTakeCareHealth),  Region=as.factor(Region),  Tablet_AchieveGoal=as.factor(Tablet_AchieveGoal),  NoticeCalorieInfoOnMenu=as.factor(NoticeCalorieInfoOnMenu),  SeekHealthInfo=as.factor(SeekHealthInfo),  EducA=as.factor(EducA))%>%
+  mutate(Gender=recode(Gender,"1"="Male", "2"="Female"),Gender=as.factor(Gender))%>%
+  mutate(Region=recode(Region, "1"="Northeast", "2"="Midwest","3"="South","4"="West"),Region=as.factor(Region))%>%
+  mutate(SeekHealthInfo=recode(SeekHealthInfo,"1"="Yes","2"="No"),SeekHealthInfo=as.factor(SeekHealthInfo))%>%
+  #mutate(EducA=recode(EducA,"1"="1LessThanHS","2"="2High School Graduate","3"="3Some College","4"="4College Graduate or More"),EducA=as.factor(EducA))%>%
+  mutate(RaceEthn5=recode(RaceEthn5, "2"="AfricanAmerican","3"="Hispanic","4"="Asian","5"="Other","1"="White"),RaceEthn5=as.factor(RaceEthn5))%>%
+  mutate(Tablet_AchieveGoal=recode(Tablet_AchieveGoal,"2"="No", "1"="Yes"), Tablet_AchieveGoal=as.factor(Tablet_AchieveGoal))%>%
+  mutate(NoticeCalorieInfoOnMenu=recode(NoticeCalorieInfoOnMenu,"2"="No", "1"="Yes"),NoticeCalorieInfoOnMenu=as.factor(NoticeCalorieInfoOnMenu))%>%
+  mutate(RuralUrban=recode(RuralUrban,"1"="UrbanMetro","2"="UrbanMetro","3"="UrbanMetro","4"="UrbanNonMetro","5"="UrbanNonMetro","6"="UrbanNonMetro","7"="UrbanNonMetro","8"="Rural","9"="Rural"),RuralUrban=as.factor(RuralUrban))%>% 
+  #mutate(Income=as.factor(Income))%>%#,Education=as.factor(Education),Gender=as.factor(Gender),RuralUrban=as.factor(RuralUrban),RaceEthn5=as.factor(RaceEthn5),smokeStatus=as.factor(smokeStatus),Region=as.factor(Region),Tablet_AchieveGoal=as.factor(Tablet_AchieveGoal),NoticeCalorieInfoOnMenu=as.factor(NoticeCalorieInfoOnMenu),SeekHealthInfo=as.factor(SeekHealthInfo))%>%
+  mutate(smokeStatus=recode(smokeStatus,"1"="Current","2"="Former","3"="Never"),smokeStatus=as.factor(smokeStatus))%>%
+  mutate(OwnAbilityTakeCareHealth=recode(OwnAbilityTakeCareHealth,"1"="CompletelyConfident", "2"="VeryConfident", "3"="SomewhatConfident","4"="ALittleConfident","5"="NotConfidentAtAll"),OwnAbilityTakeCareHealth=as.factor(OwnAbilityTakeCareHealth))
+```
+
+```{r}
+library(psych)
+library(Hmisc)
+summary(hints1)
+describe(hints1)
+hintsz<-hints1%>%
+  select(Fruit,Vegetables,EducA,Income)%>%
+  mutate(Fruit=as.factor(Fruit),Vegetables=as.factor(Vegetables),EducA=as.factor(EducA),Income=as.factor(Income))
+
+table(hintsz$Income)
+summary(hintsz)
+library(ggplot2)
+library(ggthemes)
+hintsnum<-hints1%>%
+  select(Vegetables,Fruit,Age,BMI,TimesModerateExercise,HowLongModerateExerciseMinutes,EducA,Income)%>%
+  filter(!is.na(Vegetables),
+         !is.na(Fruit),
+         !is.na(Age),
+         !is.na(BMI),
+         !is.na(TimesModerateExercise),
+         !is.na(HowLongModerateExerciseMinutes),
+         !is.na(EducA),
+         !is.na(Income))
+corr<-hints1[c("Vegetables","Fruit","Age","BMI","TimesModerateExercise","HowLongModerateExerciseMinutes","EducA","Income")]
+cor(corr,use="complete.obs")
+library(Hmisc)
+library(psych)
+describe(hintsnum)
+M<-cor(hintsnum)
+head(round(M,2))
+
+library(corrplot)
+corrplot(M,order="hclust")
+```
+
+
+```{r}
+#model.1aa <- lm(Fruit~.-Vegetables, data = hints1)
+#summary(model.1aa)
+
+model.1b <-lm(Fruit~EducA+Income, hints1)
+summary(model.1b)
+
+
+model.1c <-lm(Fruit~EducA+Income+Region+RuralUrban, hints1)
+summary(model.1c)
+
+model.1d <-lm(Fruit~EducA+Income+Region+Gender+Age+RuralUrban+RaceEthn5, hints1)
+summary(model.1d)
+
+
+
+model.1a <-lm(Fruit~EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+RaceEthn5+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo, hints1)
+summary(model.1a)
+
+library(texreg)
+screenreg(list(model.1b,model.1c,model.1d,model.1a))
+model.2b <-lm(Vegetables~EducA+Income, hints1)
+summary(model.2b)
+model.2c <-lm(Vegetables~EducA+Income+Region+RuralUrban, hints1)
+summary(model.2c)
+
+model.2d <-lm(Vegetables~EducA+Income+Region+Gender+Age+RuralUrban+RaceEthn5, hints1)
+summary(model.2d)
+
+model.2a <-lm(Vegetables~EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+RaceEthn5+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo, hints1)
+summary(model.2a)
+library(texreg)
+screenreg(list(model.2b,model.2c,model.2d,model.2a))
+```
+
+```{r}
+hints2<-hints1%>%
+  mutate(meetdailyreq=(Fruit+Vegetables))%>%
+  select(meetdailyreq,EducA,Income,Region,Gender,OwnAbilityTakeCareHealth,BMI,TimesModerateExercise,Age,HowLongModerateExerciseMinutes,smokeStatus,RuralUrban,RaceEthn5,smokeStatus,Tablet_AchieveGoal,NoticeCalorieInfoOnMenu,SeekHealthInfo)
+head(hints2)
+t.test(hints2$Age,hints2$meetdailyreq)
+sd(hints2$Age)
+t.test(hints2$HowLongModerateExerciseMinutes,hints2$meetdailyreq)
+sd(hints1$HowLongModerateExerciseMinutes)
+t.test(hints2$BMI,hints2$meetdailyreq)
+sd(hints2$BMI)
+t.test(hints2$TimesModerateExercise,hints2$meetdailyreq)
+sd(hints2$TimesModerateExercise)
+t.test(hints2$EducA,hints2$meetdailyreq)
+sd(hints2$EducA)
+t.test(hints2$Income,hints2$meetdailyreq)
+summary(hints2$Income)
+sd(hints2$Income)
+summary(hints2$SeekHealthInfo)
+#only for 2 factors
+t.test(formula = meetdailyreq ~ Gender,	
+                       data = hints2,	
+                       subset = Gender %in% c("Male", "Female"))  
+sd(hints2$Gender%in%c("Male"))
+sd(hints2$Gender%in%c("Female"))
+sqrt(var(hints2$Gender%in%c("Male")))
+sqrt(var(hints2$Gender%in%c("Female")))
+
+t.test(formula = meetdailyreq ~ Tablet_AchieveGoal,	
+                       data = hints2,	
+                       subset = Tablet_AchieveGoal %in% c("Yes", "No"))
+sd(hints1$Tablet_AchieveGoal%in%c("Yes"))
+sd(hints1$Tablet_AchieveGoal%in%c("No"))
+
+t.test(formula = meetdailyreq ~ NoticeCalorieInfoOnMenu,	
+                       data = hints2,	
+                       subset = NoticeCalorieInfoOnMenu %in% c("Yes", "No"))
+sd(hints1$NoticeCalorieInfoOnMenu%in%c("Yes"))
+sd(hints1$NoticeCalorieInfoOnMenu%in%c("No"))
+
+t.test(formula = meetdailyreq ~ SeekHealthInfo,	
+                       data = hints2,	
+                       subset = SeekHealthInfo %in% c("Yes", "No"))
+sd(hints1$SeekHealthInfo%in%c("Yes"))
+sd(hints1$SeekHealthInfo%in%c("No"))
+
+
+describe(hints2$meetdailyreq)
+
+hintsnum<-hints2%>%
+  dplyr::select(meetdailyreq,Age,BMI,TimesModerateExercise,HowLongModerateExerciseMinutes)%>%
+  filter(!is.na(meetdailyreq),
+         !is.na(Age),
+         !is.na(BMI),
+         !is.na(TimesModerateExercise),
+         !is.na(HowLongModerateExerciseMinutes))
+
+M<-cor(hintsnum)
+head(round(M,2))
+library(corrplot)
+corrplot(M,order="hclust")
+
+
+plot(meetdailyreq~EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+RaceEthn5+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,  hints2)
+
+
+model.3b <-lm(meetdailyreq~EducA+Income, hints2)
+summary(model.3b)
+
+model.3c <-lm(meetdailyreq~EducA+Income+Region+RuralUrban, hints2)
+summary(model.3c)
+
+model.3d <-lm(meetdailyreq~EducA+Income+Region+Gender+Age+RuralUrban+RaceEthn5, hints2)
+summary(model.3d)
+
+
+model.3a<-lm(meetdailyreq~EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+RuralUrban+RaceEthn5+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,  hints2)
+summary(model.3a)
+anova(model.3a)
+lmrac1<-lm(meetdailyreq~RaceEthn5+EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,hints2)
+summary(lmrac1)
+lmrace<-aov(meetdailyreq~RaceEthn5+EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,hints2)
+summary(lmrace)
+
+library(confintr)
+confint(model.1a)
+confint(model.2a)
+confint(model.3a)
+
+
+anova1<-aov(meetdailyreq~Region,hints2)
+TukeyHSD(anova1)
+summary(anova1)
+plot(anova1, 1)
+plot(anova1, 2)
+model.tables(anova1,"means")
+
+anova2<-aov(meetdailyreq~RuralUrban,hints2)
+TukeyHSD(anova2)
+summary(anova2)
+model.tables(anova2,"means")
+
+anova3<-aov(meetdailyreq~RaceEthn5,hints2)
+TukeyHSD(anova3)
+summary(anova3)
+model.tables(anova3,"means")
+anova(model.3a)
+lmrac1<-lm(meetdailyreq~RaceEthn5+EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,hints2)
+summary(lmrac1)
+lmrace<-aov(meetdailyreq~RaceEthn5+EducA+Income+Region+Gender+OwnAbilityTakeCareHealth+BMI+TimesModerateExercise+Age+HowLongModerateExerciseMinutes+smokeStatus+RuralUrban+smokeStatus+Tablet_AchieveGoal+NoticeCalorieInfoOnMenu+SeekHealthInfo,hints2)
+summary(lmrace)
+anova(lmrace)
+
+anova4<-aov(meetdailyreq~smokeStatus,hints2)
+TukeyHSD(anova4)
+summary(anova4)
+model.tables(anova4,"means")
+
+
+anova5<-aov(meetdailyreq~OwnAbilityTakeCareHealth,hints2)
+TukeyHSD(anova5)
+summary(anova5)
+model.tables(anova5,"means")
+library(texreg)
+screenreg(list(model.3b,model.3c,model.3d,model.3a))
+```
+
+```{r fig.height=20, fig.width=20}
+library(ggcorrplot)
+model.matrix(~0+., data=hints2) %>% 
+  cor(use="pairwise.complete.obs") %>% 
+  ggcorrplot(show.diag = F, type="lower", lab=TRUE, lab_size=4.5, sig.level=0.05)
+
+```
+
+
